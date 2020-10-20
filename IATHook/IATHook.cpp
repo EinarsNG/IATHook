@@ -1,4 +1,5 @@
 #include "IATHook.h"
+#include <string>
 
 IATHook::IATHook(const char* sz_IAT_Module, const char* szModuleName, const char* szFunctionName, void* pHkFunction)
 {
@@ -31,6 +32,7 @@ bool IATHook::ApplyHook()
     PIMAGE_IMPORT_BY_NAME pImportByName;
 
     char* szModName, * szImportName;
+ 
     DWORD oldProtection;
     if (dataDirectory.Size > 0)
     {
@@ -38,7 +40,7 @@ bool IATHook::ApplyHook()
         do
         {
             szModName = reinterpret_cast<char*>(hModule + pImportDescriptor->Name);
-            if (!strcmp(szModName, this->szModuleName))
+            if (!_stricmp(szModName, this->szModuleName))
             {
                 pThunkDataFirst = reinterpret_cast<PIMAGE_THUNK_DATA>(hModule + pImportDescriptor->FirstThunk);
                 pThunkDataOriginal = reinterpret_cast<UINT_PTR*>(hModule + pImportDescriptor->OriginalFirstThunk);
@@ -46,14 +48,14 @@ bool IATHook::ApplyHook()
                 {
                     pImportByName = reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(reinterpret_cast<BYTE*>(hModule) + *pThunkDataOriginal);
                     szImportName = reinterpret_cast<char*>(pImportByName->Name);
-                    if (!strcmp(szImportName, this->szFunctionName))
+                    if (!_stricmp(szImportName, this->szFunctionName))
                     {
                         VirtualProtect(&pThunkDataFirst->u1.Function, sizeof(UINT_PTR), PAGE_EXECUTE_READWRITE, &oldProtection);
                         if(this->pOriginalFunction == 0)
                             this->pOriginalFunction = pThunkDataFirst->u1.Function;
                         pThunkDataFirst->u1.Function = this->pHkFunction;
                         if(this->pHookLocation == 0)
-                            this->pHookLocation = &pThunkDataFirst->u1.Function;
+                            this->pHookLocation = reinterpret_cast<UINT_PTR*>(&pThunkDataFirst->u1.Function);
                         VirtualProtect(&pThunkDataFirst->u1.Function, sizeof(UINT_PTR), oldProtection, &oldProtection);
                         return true;
                     }

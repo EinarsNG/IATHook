@@ -3,9 +3,9 @@
 
 class IATHook
 {
-    DWORD       pOriginalFunction;
-    DWORD       pHkFunction;
-    DWORD       *pHookLocation;
+    UINT_PTR    pOriginalFunction;
+    UINT_PTR    pHkFunction;
+    UINT_PTR    *pHookLocation;
     const char  *sz_IAT_Module;
     const char  *szModuleName;
     const char  *szFunctionName;
