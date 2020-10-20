@@ -71,8 +71,11 @@ bool IATHook::ApplyHook()
 
 void IATHook::Unhook()
 {
-    DWORD oldProtection;
-    VirtualProtect(this->pHookLocation, sizeof(UINT_PTR), PAGE_EXECUTE_READWRITE, &oldProtection);
-    *this->pHookLocation = this->pOriginalFunction;
-    VirtualProtect(this->pHookLocation, sizeof(UINT_PTR), oldProtection, &oldProtection);
+    if (this->pOriginalFunction != 0)
+    {
+        DWORD oldProtection;
+        VirtualProtect(this->pHookLocation, sizeof(UINT_PTR), PAGE_EXECUTE_READWRITE, &oldProtection);
+        *this->pHookLocation = this->pOriginalFunction;
+        VirtualProtect(this->pHookLocation, sizeof(UINT_PTR), oldProtection, &oldProtection);
+    }
 }
